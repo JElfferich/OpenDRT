@@ -221,7 +221,7 @@ vec2 opponent(vec3 rgb) {
 }
 
 float hue_offset(float h, float o) {
-    return mod(h - o + OPENDRT_PI, 2.0 * OPENDRT_PI) - PI;
+    return mod(h - o + OPENDRT_PI, 2.0 * OPENDRT_PI) - OPENDRT_PI;
 }
 
 float gauss_window(float x, float w) {
