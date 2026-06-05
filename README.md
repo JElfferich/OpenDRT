@@ -25,7 +25,7 @@ void main() {
     vec3 color = texture(screen_texture, tex_coords).rgb;
 
     // Start with a preset.
-    OpenDRTParams opendrt_params = PRESET_STANDARD;
+    OpenDRTParams opendrt_params = OPENDRT_PARAMS_STANDARD;
 
     // Optionally override individual parameters.
     // opendrt_params.tn_Lp  = 1000.0; // Target 1000-nit HDR display
