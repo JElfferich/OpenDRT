@@ -1,6 +1,6 @@
 # OpenDRT — GLSL Implementation
 
-A single-file GLSL port of [OpenDRT](https://github.com/jedypod/open-display-transform), a professional, open-source Display Rendering Transform (DRT). Designed for real-time use in graphics applications and video games.
+A single-file GLSL port of [OpenDRT](https://github.com/jedypod/open-display-transform), a professional, open-source Display Rendering Transform. Designed for real-time use in graphics applications and video games.
 
 ## Quick Start
 
