@@ -7,7 +7,7 @@ A single-file GLSL port of [OpenDRT](https://github.com/jedypod/open-display-tra
 **1. Include the file** in your shader (via `#include` or by pasting the source):
 
 ```glsl
-#include "OpenDRT.glsl"
+#include "opendrt.glsl"
 ```
 
 **2. Call `opendrt()`** from your fragment shader:
