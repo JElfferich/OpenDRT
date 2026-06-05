@@ -266,7 +266,7 @@ vec3 opendrt(vec3 rgb, OpenDRTParams params) {
     ach_d = 1.25 * compress_toe_quadratic(ach_d, 0.25, 0);
 
     // Hue angle
-    float hue = mod(atan(opp.x, opp.y) + 3.14159265359 + 1.10714931, 2.0 * 3.14159265359);
+    float hue = mod(atan(opp.x, opp.y) + OPENDRT_PI + 1.10714931, 2.0 * OPENDRT_PI);
 
     // Hue windows
     vec3 ha_rgb = vec3(
