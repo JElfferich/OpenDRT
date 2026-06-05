@@ -98,7 +98,7 @@ struct OpenDRTParams {
 // Look presets
 
 // Standard: A minimal smooth starting look with natural color rendition and minimal adjustments to create an aesthetically pleasing image. Uses the Medium Contrast tonescale preset.
-const OpenDRTParams PRESET_STANDARD = OpenDRTParams(
+const OpenDRTParams OPENDRT_PARAMS_STANDARD = OpenDRTParams(
     100.0, 0.13, 0.5, 10.0, 1.66, 0.5, 0.003, 0.005,
     0, 0.0, 1.0, 4.0, 0, 0.0, 0.5, 0.35, 0.25, 0.55,
     1, 0.25, 0.5, 0.0, 0.1, 0.25, 0.5, 0.0, 1, 0.06, 0.08, 0.06,
@@ -108,7 +108,7 @@ const OpenDRTParams PRESET_STANDARD = OpenDRTParams(
 );
 
 // Arriba: A minimal smooth look with slightly stronger saturation and a soft rolloff in shadows similar to typical camera manufacturer picture formation approaches.
-const OpenDRTParams PRESET_ARRIBA = OpenDRTParams(
+const OpenDRTParams OPENDRT_PARAMS_ARRIBA = OpenDRTParams(
     100.0, 0.13, 0.5, 10.0, 1.05, 0.5, 0.1, 0.01,
     0, 0.0, 1.0, 4.0, 1, 1.5, 0.2, 0.35, 0.25, 0.55,
     1, 0.25, 0.45, 0.0, 0.1, 0.25, 0.25, 0.0, 1, 0.06, 0.08, 0.06,
@@ -118,7 +118,7 @@ const OpenDRTParams PRESET_ARRIBA = OpenDRTParams(
 );
 
 // Sylvan: A smooth starting look with slightly stronger contrast and stronger hue distortions which may be preferential for skin.
-const OpenDRTParams PRESET_SYLVAN = OpenDRTParams(
+const OpenDRTParams OPENDRT_PARAMS_SYLVAN = OpenDRTParams(
     100.0, 0.13, 0.5, 10.0, 1.6, 0.5, 0.01, 0.01,
     0, 0.0, 1.0, 4.0, 1, 0.25, 0.75, 0.25, 0.25, 0.55,
     1, 0.15, 0.5, 0.15, 0.1, 0.25, 0.15, 0.15, 1, 0.05, 0.08, 0.05,
@@ -128,7 +128,7 @@ const OpenDRTParams PRESET_SYLVAN = OpenDRTParams(
 );
 
 // Colorful: A low contrast saturated bright look. Might be a good fit for animation.
-const OpenDRTParams PRESET_COLORFUL = OpenDRTParams(
+const OpenDRTParams OPENDRT_PARAMS_COLORFUL = OpenDRTParams(
     100.0, 0.13, 0.5, 10.0, 1.5, 0.5, 0.003, 0.003,
     0, 0.0, 1.0, 4.0, 1, 0.4, 0.5, 0.35, 0.25, 0.55,
     1, 0.5, 1.0, 0.0, 0.5, 0.15, 0.15, 0.15, 1, 0.05, 0.06, 0.05,
@@ -138,7 +138,7 @@ const OpenDRTParams PRESET_COLORFUL = OpenDRTParams(
 );
 
 // Aery: A low contrast look with cool highlights and more pure color rendered quite bright. It features strong desaturation near the grey axis, and darkening of only the most pure colors.
-const OpenDRTParams PRESET_AERY = OpenDRTParams(
+const OpenDRTParams OPENDRT_PARAMS_AERY = OpenDRTParams(
     100.0, 0.13, 0.5, 10.0, 1.15, 0.5, 0.04, 0.006,
     0, 0.0, 0.0, 0.5, 1, 0.5, 2.0, 0.25, 0.2, 0.5,
     1, 0.0, 0.5, 0.15, 0.1, 0.0, 0.1, 0.0, 1, 0.05, 0.08, 0.05,
@@ -148,7 +148,7 @@ const OpenDRTParams PRESET_AERY = OpenDRTParams(
 );
 
 // Dystopic: A high contrast look with very low mid-purity-range saturation and strong filmish hue distortions.
-const OpenDRTParams PRESET_DYSTOPIC = OpenDRTParams(
+const OpenDRTParams OPENDRT_PARAMS_DYSTOPIC = OpenDRTParams(
     100.0, 0.13, 0.5, 10.0, 1.6, 0.5, 0.01, 0.008,
     1, 0.25, 0.0, 1.0, 1, 1.0, 0.75, 0.2, 0.25, 0.55,
     1, 0.15, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, 0.05, 0.08, 0.05,
@@ -158,7 +158,7 @@ const OpenDRTParams PRESET_DYSTOPIC = OpenDRTParams(
 );
 
 // Umbra: A dark moody cinematic look. Features low shadow contrast, warm whites, strong filmic hue distortions, cyan blues, and more saturated colors that render very dark. Works well with a Display Peak Luminance of 200 nits or above.
-const OpenDRTParams PRESET_UMBRA = OpenDRTParams(
+const OpenDRTParams OPENDRT_PARAMS_UMBRA = OpenDRTParams(
     100.0, 0.13, 0.5, 10.0, 1.8, 0.5, 0.001, 0.015,
     0, 0.0, 1.0, 4.0, 1, 1.0, 1.0, 0.35, 0.25, 0.55,
     1, 0.0, 0.5, 0.0, 0.15, 0.25, 0.25, 0.0, 1, 0.05, 0.06, 0.05,
