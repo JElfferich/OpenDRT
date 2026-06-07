@@ -5,7 +5,6 @@
  * License: GPLv3
  *
  * Usage:
- *   vec3 color = opendrt(linear_rec709_rgb);
  *   OpenDRTParams p = opendrt_preset_arriba();
  *   vec3 color = opendrt_transform(linear_rec709_rgb, p);
  *
@@ -503,7 +502,7 @@ vec3 opendrt_transform(vec3 rgb, OpenDRTParams p) {
                                opendrt_spowf(1.0 - tsn_const, 1.0 / p.ptm_low_rng);
         float ptm_high_f = 1.0;
         if (p.ptm_high_st != 0.0 && p.ptm_high_rng != 0.0)
-            ptm_high_f = 1.0 + p.ptm_high * exp(-2.0 * ach_d * ach_d / p.ptm_high_st) +
+            ptm_high_f = 1.0 + p.ptm_high * exp(-2.0 * ach_d * ach_d / p.ptm_high_st) *
                                opendrt_spowf(tsn_pt, 1.0 / (4.0 * p.ptm_high_rng));
         ptf *= ptm_low_f * ptm_high_f;
     }
@@ -557,9 +556,4 @@ vec3 opendrt_transform(vec3 rgb, OpenDRTParams p) {
     rgb *= tsn;
 
     return rgb;
-}
-
-// Simplified entry point
-vec3 opendrt(vec3 color) {
-    return opendrt_transform(color, opendrt_preset_default());
 }
