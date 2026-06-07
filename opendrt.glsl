@@ -88,6 +88,7 @@ struct OpenDRTParams {
     float tn_Lp;    // Display peak luminance in nits (usually 100.0 for SDR, 200-1000+ for HDR).
     float tn_Lg;    // Display grey luminance in nits (controls mid-grey, usually 10.0).
     float tn_gb;    // HDR grey boost — increases mid-grey as peak luminance rises (typical 0.13).
+    int tn_su;      // Surround: 0=dark (DCI), 1=dim (Rec.1886), 2=bright (sRGB). Default 0.
 
     // Contrast high
     bool tn_hcon_enable; // Contrast High allows control of the upper section of the tonescale function.
@@ -212,7 +213,7 @@ float opendrt_hue_offset(float h, float o) {
 OpenDRTParams opendrt_preset_default() {
     OpenDRTParams p;
     p.tn_con = 1.66; p.tn_sh = 0.5; p.tn_toe = 0.003; p.tn_off = 0.005;
-    p.tn_Lp = 100.0; p.tn_Lg = 10.0; p.tn_gb = 0.13;
+    p.tn_Lp = 100.0; p.tn_Lg = 10.0; p.tn_gb = 0.13; p.tn_su = 0;
     p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 4.0;
     p.tn_lcon_enable = false; p.tn_lcon = 0.0; p.tn_lcon_w = 0.5;
     p.cwp = 2; p.cwp_lm = 0.25;
@@ -251,6 +252,7 @@ OpenDRTParams opendrt_preset_sylvan() {
     p.tn_lcon_enable = true; p.tn_lcon = 0.25; p.tn_lcon_w = 0.75;
     p.rs_sa = 0.25;
     p.pt_lml = 0.15; p.pt_lml_g = 0.15;
+    p.ptl_y = 0.05;
     p.pt_lmh_r = 0.15; p.pt_lmh_b = 0.15;
     p.ptm_low = 0.5; p.ptm_low_rng = 0.5; p.ptm_high_rng = 0.5; p.ptm_high_st = 0.5;
     p.brl = -1.0; p.brl_r = -2.0; p.brl_g = -2.0; p.brl_b = 0.0;
@@ -289,9 +291,9 @@ OpenDRTParams opendrt_preset_aery() {
     p.rs_sa = 0.25; p.rs_rw = 0.2; p.rs_bw = 0.5;
     p.pt_lml = 0.0; p.pt_lml_r = 0.5; p.pt_lml_g = 0.15;
     p.pt_lmh = 0.0; p.pt_lmh_r = 0.1; p.pt_lmh_b = 0.0;
-    p.ptl_c = 0.05;
+    p.ptl_c = 0.05; p.ptl_y = 0.05;
     p.ptm_low = 0.8; p.ptm_low_rng = 0.35; p.ptm_high = -0.9; p.ptm_high_rng = 0.5; p.ptm_high_st = 0.3;
-    p.brl = -3.0; p.brl_r = 0.0; p.brl_b = 1.0;
+    p.brl = -3.0; p.brl_r = 0.0; p.brl_g = 0.0; p.brl_b = 1.0;
     p.brl_rng = 0.8; p.brl_st = 0.15;
     p.brlp = -1.0; p.brlp_r = -1.0; p.brlp_g = -1.0; p.brlp_b = 0.0;
     p.hc_r = 0.5; p.hc_r_rng = 0.25;
@@ -309,6 +311,7 @@ OpenDRTParams opendrt_preset_dystopic() {
     p.rs_sa = 0.2;
     p.pt_lml = 0.15; p.pt_lml_r = 0.0; p.pt_lml_g = 0.0; p.pt_lml_b = 0.0;
     p.pt_lmh = 0.0; p.pt_lmh_r = 0.0; p.pt_lmh_b = 0.0;
+    p.ptl_c = 0.05; p.ptl_y = 0.05;
     p.ptm_low = 0.25; p.ptm_low_rng = 0.25; p.ptm_low_st = 0.8;
     p.ptm_high_rng = 0.6; p.ptm_high_st = 0.25;
     p.brl = -2.0; p.brl_r = -2.0; p.brl_g = -2.0;
@@ -350,7 +353,7 @@ vec3 opendrt_transform(vec3 rgb, OpenDRTParams p) {
     float ts_x0 = 0.18 + p.tn_off;
     float ts_y0 = p.tn_Lg / 100.0 * (1.0 + p.tn_gb * (log(ts_y1) / log(2.0)));
     float ts_s0 = opendrt_compress_toe_quadratic_inv(ts_y0, p.tn_toe);
-    float ts_p = p.tn_con;
+    float ts_p = p.tn_con / (1.0 + float(p.tn_su) * 0.05);
     float ts_s10 = ts_x0 * (pow(max(ts_s0, 1e-10), -1.0 / p.tn_con) - 1.0);
     float ts_m1 = ts_y1 / opendrt_spowf(ts_x1 / (ts_x1 + ts_s10), p.tn_con);
     float ts_m2 = opendrt_compress_toe_quadratic_inv(ts_m1, p.tn_toe);
