@@ -113,9 +113,7 @@ struct OpenDRTParams {
     // Purity compress high
     bool pt_enable; // Compresses purity as intensity increases.
     float pt_lml;   // Limit the strength of purity compression as intensity decreases, for all hue angles.
-    float pt_lml_r; // Limit the strength of purity compression as intensity decreases, for reds.
-    float pt_lml_g; // Limit the strength of purity compression as intensity decreases, for greens.
-    float pt_lml_b; // Limit the strength of purity compression as intensity decreases, for blues.
+    vec3 pt_lml_rgb; // Per-channel limit of purity compression as intensity decreases.
     float pt_lmh;   // Limit the strength of purity compression as intensity increases.
     float pt_lmh_r; // Limit the strength of red purity compression as intensity increases.
     float pt_lmh_b; // Limit the strength of blue purity compression as intensity increases.
@@ -139,18 +137,14 @@ struct OpenDRTParams {
     // Brilliance (pre-tonescale)
     bool brl_enable; // Brilliance scales the intensity of more pure stimuli before tonescale.
     float brl;       // Global intensity scale of high-purity stimuli.
-    float brl_r;     // Scale intensity of high-purity reds.
-    float brl_g;     // Scale intensity of high-purity greens.
-    float brl_b;     // Scale intensity of high-purity blues.
+    vec3 brl_rgb;    // Per-channel scale intensity of high-purity stimuli.
     float brl_rng;   // As Brilliance Range is increased, the adjustments affect more of the low intensity values.
     float brl_st;    // As Brilliance Strength is increased, the adjustments affect more of the low purity values.
 
     // Post brilliance
     bool brlp_enable; // Post Brilliance scales the intensity of more pure stimuli after purity compression.
     float brlp;       // Global post purity compression brilliance adjustment.
-    float brlp_r;     // Scale intensity of high-purity red, post purity compression.
-    float brlp_g;     // Scale intensity of high-purity green, post purity compression.
-    float brlp_b;     // Scale intensity of high-purity blue, post purity compression.
+    vec3 brlp_rgb;   // Per-channel post brilliance scale.
 
     // Hue contrast
     bool hc_enable; // Hue Contrast compresses hue angle towards the primary at the bottom.
@@ -159,27 +153,26 @@ struct OpenDRTParams {
 
     // Hue shift RGB
     bool hs_rgb_enable; // Hue Shift RGB adds hue distortion to the red green and blue primary hue angles.
-    float hs_r;         // Amount to distort the red hue angle towards yellow as intensity increases.
-    float hs_r_rng;     // Range of the red hueshift.
-    float hs_g;         // Amount to distort the green hue angle towards yellow as intensity increases.
-    float hs_g_rng;     // Range of the green hueshift.
-    float hs_b;         // Amount to distort the blue hue angle towards cyan as intensity increases.
-    float hs_b_rng;     // Range of the blue hueshift.
+    vec3 hs_rgb;        // Per-primary hue shift amount (RGB).
+    vec3 hs_rgb_rng;    // Per-primary hue shift range (RGB).
 
     // Hue shift CMY
     bool hs_cmy_enable; // Hue Shift CMY adds hue distortion to secondary hue angles as intensity decreases.
-    float hs_c;         // Amount to distort the cyan hue angle towards blue as intensity decreases.
-    float hs_c_rng;     // Range of the cyan hueshift.
-    float hs_m;         // Amount to distort the magenta hue angle towards blue as intensity decreases.
-    float hs_m_rng;     // Range of the magenta hueshift.
-    float hs_y;         // Amount to distort the yellow hue angle towards red as intensity decreases.
-    float hs_y_rng;     // Range of the yellow hueshift.
+    vec3 hs_cmy;        // Per-secondary hue shift amount (CMY).
+    vec3 hs_cmy_rng;    // Per-secondary hue shift range (CMY).
 };
 
 // Functions
 // Utility math
 float opendrt_spowf(float a, float b) {
     return a <= 0.0 ? a : pow(max(a, 0.0), b);
+}
+vec3 opendrt_spowf(vec3 a, vec3 b) {
+    return vec3(
+        a.x <= 0.0 ? a.x : pow(max(a.x, 0.0), b.x),
+        a.y <= 0.0 ? a.y : pow(max(a.y, 0.0), b.y),
+        a.z <= 0.0 ? a.z : pow(max(a.z, 0.0), b.z)
+    );
 }
 
 // Tonescale helper functions
@@ -218,19 +211,17 @@ OpenDRTParams opendrt_preset_default() {
     p.tn_lcon_enable = false; p.tn_lcon = 0.0; p.tn_lcon_w = 0.5;
     p.cwp = 2; p.cwp_lm = 0.25;
     p.rs_sa = 0.35; p.rs_rw = 0.25; p.rs_bw = 0.55;
-    p.pt_enable = true; p.pt_lml = 0.25; p.pt_lml_r = 0.5; p.pt_lml_g = 0.0; p.pt_lml_b = 0.1;
+    p.pt_enable = true; p.pt_lml = 0.25; p.pt_lml_rgb = vec3(0.5, 0.0, 0.1);
     p.pt_lmh = 0.25; p.pt_lmh_r = 0.5; p.pt_lmh_b = 0.0; p.pt_hdr = 0.5;
     p.ptl_enable = true; p.ptl_c = 0.06; p.ptl_m = 0.08; p.ptl_y = 0.06;
     p.ptm_enable = true; p.ptm_low = 0.4; p.ptm_low_rng = 0.25; p.ptm_low_st = 0.5;
     p.ptm_high = -0.8; p.ptm_high_rng = 0.35; p.ptm_high_st = 0.4;
-    p.brl_enable = true; p.brl = 0.0; p.brl_r = -2.5; p.brl_g = -1.5; p.brl_b = -1.5;
+    p.brl_enable = true; p.brl = 0.0; p.brl_rgb = vec3(-2.5, -1.5, -1.5);
     p.brl_rng = 0.5; p.brl_st = 0.35;
-    p.brlp_enable = true; p.brlp = -0.5; p.brlp_r = -1.25; p.brlp_g = -1.25; p.brlp_b = -0.25;
+    p.brlp_enable = true; p.brlp = -0.5; p.brlp_rgb = vec3(-1.25, -1.25, -0.25);
     p.hc_enable = true; p.hc_r = 1.0; p.hc_r_rng = 0.3;
-    p.hs_rgb_enable = true; p.hs_r = 0.6; p.hs_r_rng = 0.6;
-    p.hs_g = 0.35; p.hs_g_rng = 1.0; p.hs_b = 0.66; p.hs_b_rng = 1.0;
-    p.hs_cmy_enable = true; p.hs_c = 0.25; p.hs_c_rng = 1.0;
-    p.hs_m = 0.0; p.hs_m_rng = 1.0; p.hs_y = 0.0; p.hs_y_rng = 1.0;
+    p.hs_rgb_enable = true; p.hs_rgb = vec3(0.6, 0.35, 0.66); p.hs_rgb_rng = vec3(0.6, 1.0, 1.0);
+    p.hs_cmy_enable = true; p.hs_cmy = vec3(0.25, 0.0, 0.0); p.hs_cmy_rng = vec3(1.0, 1.0, 1.0);
     return p;
 }
 
@@ -238,11 +229,11 @@ OpenDRTParams opendrt_preset_arriba() {
     OpenDRTParams p = opendrt_preset_default();
     p.tn_con = 1.05; p.tn_toe = 0.1; p.tn_off = 0.01;
     p.tn_lcon_enable = true; p.tn_lcon = 1.5; p.tn_lcon_w = 0.2;
-    p.pt_lml = 0.25; p.pt_lml_r = 0.45; p.pt_lml_b = 0.1;
+    p.pt_lml = 0.25; p.pt_lml_rgb = vec3(0.45, 0.0, 0.1);
     p.pt_lmh = 0.25; p.pt_lmh_r = 0.25; p.pt_lmh_b = 0.0;
     p.ptm_low = 1.0; p.ptm_low_rng = 0.4; p.ptm_high_rng = 0.66; p.ptm_high_st = 0.6;
-    p.brlp = 0.0; p.brlp_r = -1.7; p.brlp_g = -2.0; p.brlp_b = -0.5;
-    p.hs_r_rng = 0.8; p.hs_c = 0.15;
+    p.brlp = 0.0; p.brlp_rgb = vec3(-1.7, -2.0, -0.5);
+    p.hs_rgb_rng.x = 0.8; p.hs_cmy.x = 0.15;
     return p;
 }
 
@@ -251,17 +242,16 @@ OpenDRTParams opendrt_preset_sylvan() {
     p.tn_con = 1.6; p.tn_toe = 0.01; p.tn_off = 0.01;
     p.tn_lcon_enable = true; p.tn_lcon = 0.25; p.tn_lcon_w = 0.75;
     p.rs_sa = 0.25;
-    p.pt_lml = 0.15; p.pt_lml_g = 0.15;
+    p.pt_lml = 0.15; p.pt_lml_rgb.g = 0.15;
     p.ptl_y = 0.05;
     p.pt_lmh_r = 0.15; p.pt_lmh_b = 0.15;
     p.ptm_low = 0.5; p.ptm_low_rng = 0.5; p.ptm_high_rng = 0.5; p.ptm_high_st = 0.5;
-    p.brl = -1.0; p.brl_r = -2.0; p.brl_g = -2.0; p.brl_b = 0.0;
+    p.brl = -1.0; p.brl_rgb = vec3(-2.0, -2.0, 0.0);
     p.brl_rng = 0.25; p.brl_st = 0.25;
-    p.brlp = -1.0; p.brlp_r = -0.5; p.brlp_g = -0.25; p.brlp_b = -0.25;
+    p.brlp = -1.0; p.brlp_rgb = vec3(-0.5, -0.25, -0.25);
     p.hc_r_rng = 0.4;
-    p.hs_r_rng = 1.15; p.hs_g = 0.8; p.hs_g_rng = 1.25; p.hs_b = 0.6; p.hs_b_rng = 1.0;
-    p.hs_c = 0.25; p.hs_c_rng = 0.25; p.hs_m = 0.25; p.hs_m_rng = 0.5;
-    p.hs_y = 0.35; p.hs_y_rng = 0.5;
+    p.hs_rgb_rng.x = 1.15; p.hs_rgb.g = 0.8; p.hs_rgb_rng.g = 1.25; p.hs_rgb.b = 0.6; p.hs_rgb_rng.b = 1.0;
+    p.hs_cmy = vec3(0.25, 0.25, 0.35); p.hs_cmy_rng = vec3(0.25, 0.5, 0.5);
     return p;
 }
 
@@ -269,16 +259,16 @@ OpenDRTParams opendrt_preset_colorful() {
     OpenDRTParams p = opendrt_preset_default();
     p.tn_con = 1.5; p.tn_toe = 0.003; p.tn_off = 0.003;
     p.tn_lcon_enable = true; p.tn_lcon = 0.4;
-    p.pt_lml = 0.5; p.pt_lml_r = 1.0; p.pt_lml_b = 0.5;
+    p.pt_lml = 0.5; p.pt_lml_rgb = vec3(1.0, 0.0, 0.5);
     p.pt_lmh = 0.15; p.pt_lmh_r = 0.15; p.pt_lmh_b = 0.15;
     p.ptl_c = 0.05; p.ptl_m = 0.06; p.ptl_y = 0.05;
     p.ptm_low = 0.8; p.ptm_low_rng = 0.5; p.ptm_low_st = 0.4;
     p.ptm_high_rng = 0.4; p.ptm_high_st = 0.4;
-    p.brl_r = -1.25; p.brl_g = -1.25; p.brl_b = -0.25;
+    p.brl_rgb = vec3(-1.25, -1.25, -0.25);
     p.brl_rng = 0.3; p.brl_st = 0.5;
-    p.brlp_r = -1.25; p.brlp_g = -1.25; p.brlp_b = -0.5;
+    p.brlp_rgb = vec3(-1.25, -1.25, -0.5);
     p.hc_r_rng = 0.4;
-    p.hs_r = 0.5; p.hs_r_rng = 0.8; p.hs_b = 0.5; p.hs_b_rng = 1.0; p.hs_y = 0.25;
+    p.hs_rgb.x = 0.5; p.hs_rgb_rng.x = 0.8; p.hs_rgb.b = 0.5; p.hs_rgb_rng.b = 1.0; p.hs_cmy.z = 0.25;
     return p;
 }
 
@@ -289,16 +279,16 @@ OpenDRTParams opendrt_preset_aery() {
     p.tn_lcon_enable = true; p.tn_lcon = 0.5; p.tn_lcon_w = 2.0;
     p.cwp = 1;
     p.rs_sa = 0.25; p.rs_rw = 0.2; p.rs_bw = 0.5;
-    p.pt_lml = 0.0; p.pt_lml_r = 0.5; p.pt_lml_g = 0.15;
+    p.pt_lml = 0.0; p.pt_lml_rgb = vec3(0.5, 0.15, 0.1);
     p.pt_lmh = 0.0; p.pt_lmh_r = 0.1; p.pt_lmh_b = 0.0;
     p.ptl_c = 0.05; p.ptl_y = 0.05;
     p.ptm_low = 0.8; p.ptm_low_rng = 0.35; p.ptm_high = -0.9; p.ptm_high_rng = 0.5; p.ptm_high_st = 0.3;
-    p.brl = -3.0; p.brl_r = 0.0; p.brl_g = 0.0; p.brl_b = 1.0;
+    p.brl = -3.0; p.brl_rgb = vec3(0.0, 0.0, 1.0);
     p.brl_rng = 0.8; p.brl_st = 0.15;
-    p.brlp = -1.0; p.brlp_r = -1.0; p.brlp_g = -1.0; p.brlp_b = 0.0;
+    p.brlp = -1.0; p.brlp_rgb = vec3(-1.0, -1.0, 0.0);
     p.hc_r = 0.5; p.hc_r_rng = 0.25;
-    p.hs_r_rng = 1.0; p.hs_g_rng = 2.0; p.hs_b_rng = 1.5;
-    p.hs_c = 0.35; p.hs_m = 0.25; p.hs_y = 0.35; p.hs_y_rng = 0.5;
+    p.hs_rgb_rng = vec3(1.0, 2.0, 1.5);
+    p.hs_cmy = vec3(0.35, 0.25, 0.35); p.hs_cmy_rng.z = 0.5;
     return p;
 }
 
@@ -309,18 +299,17 @@ OpenDRTParams opendrt_preset_dystopic() {
     p.tn_lcon_enable = true; p.tn_lcon = 1.0; p.tn_lcon_w = 0.75;
     p.cwp = 3;
     p.rs_sa = 0.2;
-    p.pt_lml = 0.15; p.pt_lml_r = 0.0; p.pt_lml_g = 0.0; p.pt_lml_b = 0.0;
+    p.pt_lml = 0.15; p.pt_lml_rgb = vec3(0.0);
     p.pt_lmh = 0.0; p.pt_lmh_r = 0.0; p.pt_lmh_b = 0.0;
     p.ptl_c = 0.05; p.ptl_y = 0.05;
     p.ptm_low = 0.25; p.ptm_low_rng = 0.25; p.ptm_low_st = 0.8;
     p.ptm_high_rng = 0.6; p.ptm_high_st = 0.25;
-    p.brl = -2.0; p.brl_r = -2.0; p.brl_g = -2.0;
+    p.brl = -2.0; p.brl_rgb = vec3(-2.0, -2.0, 0.0);
     p.brl_rng = 0.35; p.brl_st = 0.35;
-    p.brlp_r = -1.0; p.brlp_g = -1.0; p.brlp_b = -1.0;
+    p.brlp = 0.0; p.brlp_rgb = vec3(-1.0);
     p.hc_r_rng = 0.25;
-    p.hs_r = 0.7; p.hs_r_rng = 1.33; p.hs_g = 1.0; p.hs_g_rng = 2.0;
-    p.hs_b = 0.75; p.hs_b_rng = 2.0;
-    p.hs_c = 1.0; p.hs_c_rng = 0.5; p.hs_m = 1.0; p.hs_y = 1.0; p.hs_y_rng = 0.765;
+    p.hs_rgb = vec3(0.7, 1.0, 0.75); p.hs_rgb_rng = vec3(1.33, 2.0, 2.0);
+    p.hs_cmy = vec3(1.0, 1.0, 1.0); p.hs_cmy_rng = vec3(0.5, 1.0, 0.765);
     return p;
 }
 
@@ -329,19 +318,85 @@ OpenDRTParams opendrt_preset_umbra() {
     p.tn_con = 1.8; p.tn_toe = 0.001; p.tn_off = 0.015;
     p.tn_lcon_enable = true; p.tn_lcon = 1.0; p.tn_lcon_w = 1.0;
     p.cwp = 5;
-    p.pt_lml = 0.0; p.pt_lml_r = 0.5; p.pt_lml_b = 0.15;
+    p.pt_lml = 0.0; p.pt_lml_rgb = vec3(0.5, 0.0, 0.15);
     p.pt_lmh_r = 0.25;
     p.ptl_c = 0.05; p.ptl_m = 0.06; p.ptl_y = 0.05;
     p.ptm_low = 0.4; p.ptm_low_rng = 0.35; p.ptm_low_st = 0.66;
     p.ptm_high = -0.6; p.ptm_high_rng = 0.45; p.ptm_high_st = 0.45;
-    p.brl = -2.0; p.brl_r = -4.5; p.brl_g = -3.0; p.brl_b = -4.0;
+    p.brl = -2.0; p.brl_rgb = vec3(-4.5, -3.0, -4.0);
     p.brl_rng = 0.35; p.brl_st = 0.3;
-    p.brlp_r = -2.0; p.brlp_g = -1.0; p.brlp_b = -0.5;
+    p.brlp = 0.0; p.brlp_rgb = vec3(-2.0, -1.0, -0.5);
     p.hc_r_rng = 0.35;
-    p.hs_r = 0.66; p.hs_r_rng = 1.0; p.hs_g = 0.5; p.hs_g_rng = 2.0;
-    p.hs_b = 0.85; p.hs_b_rng = 2.0;
-    p.hs_c = 0.0; p.hs_m = 0.25; p.hs_y = 0.66; p.hs_y_rng = 0.66;
+    p.hs_rgb = vec3(0.66, 0.5, 0.85); p.hs_rgb_rng = vec3(1.0, 2.0, 2.0);
+    p.hs_cmy = vec3(0.0, 0.25, 0.66); p.hs_cmy_rng.z = 0.66;
     return p;
+}
+
+// Tonescale presets — call after selecting a look preset to override tonescale parameters
+void opendrt_tonescale_low_contrast(inout OpenDRTParams p) {
+    p.tn_con = 1.4; p.tn_sh = 0.5; p.tn_toe = 0.003; p.tn_off = 0.005;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 4.0;
+    p.tn_lcon_enable = false; p.tn_lcon = 0.0; p.tn_lcon_w = 0.5;
+}
+void opendrt_tonescale_medium_contrast(inout OpenDRTParams p) {
+    p.tn_con = 1.66; p.tn_sh = 0.5; p.tn_toe = 0.003; p.tn_off = 0.005;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 4.0;
+    p.tn_lcon_enable = false; p.tn_lcon = 0.0; p.tn_lcon_w = 0.5;
+}
+void opendrt_tonescale_high_contrast(inout OpenDRTParams p) {
+    p.tn_con = 1.4; p.tn_sh = 0.5; p.tn_toe = 0.003; p.tn_off = 0.005;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 4.0;
+    p.tn_lcon_enable = true; p.tn_lcon = 1.0; p.tn_lcon_w = 0.5;
+}
+void opendrt_tonescale_arriba(inout OpenDRTParams p) {
+    p.tn_con = 1.05; p.tn_sh = 0.5; p.tn_toe = 0.1; p.tn_off = 0.01;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 4.0;
+    p.tn_lcon_enable = true; p.tn_lcon = 1.5; p.tn_lcon_w = 0.2;
+}
+void opendrt_tonescale_sylvan(inout OpenDRTParams p) {
+    p.tn_con = 1.6; p.tn_sh = 0.5; p.tn_toe = 0.01; p.tn_off = 0.01;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 4.0;
+    p.tn_lcon_enable = true; p.tn_lcon = 0.25; p.tn_lcon_w = 0.75;
+}
+void opendrt_tonescale_colorful(inout OpenDRTParams p) {
+    p.tn_con = 1.5; p.tn_sh = 0.5; p.tn_toe = 0.003; p.tn_off = 0.003;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 4.0;
+    p.tn_lcon_enable = true; p.tn_lcon = 0.4; p.tn_lcon_w = 0.5;
+}
+void opendrt_tonescale_aery(inout OpenDRTParams p) {
+    p.tn_con = 1.15; p.tn_sh = 0.5; p.tn_toe = 0.04; p.tn_off = 0.006;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 0.0; p.tn_hcon_st = 0.5;
+    p.tn_lcon_enable = true; p.tn_lcon = 0.5; p.tn_lcon_w = 2.0;
+}
+void opendrt_tonescale_dystopic(inout OpenDRTParams p) {
+    p.tn_con = 1.6; p.tn_sh = 0.5; p.tn_toe = 0.01; p.tn_off = 0.008;
+    p.tn_hcon_enable = true; p.tn_hcon = 0.25; p.tn_hcon_pv = 0.0; p.tn_hcon_st = 1.0;
+    p.tn_lcon_enable = true; p.tn_lcon = 1.0; p.tn_lcon_w = 0.75;
+}
+void opendrt_tonescale_umbra(inout OpenDRTParams p) {
+    p.tn_con = 1.8; p.tn_sh = 0.5; p.tn_toe = 0.001; p.tn_off = 0.015;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 4.0;
+    p.tn_lcon_enable = true; p.tn_lcon = 1.0; p.tn_lcon_w = 1.0;
+}
+void opendrt_tonescale_aces_1x(inout OpenDRTParams p) {
+    p.tn_con = 1.0; p.tn_sh = 0.35; p.tn_toe = 0.02; p.tn_off = 0.0;
+    p.tn_hcon_enable = true; p.tn_hcon = 0.55; p.tn_hcon_pv = 0.0; p.tn_hcon_st = 2.0;
+    p.tn_lcon_enable = true; p.tn_lcon = 1.13; p.tn_lcon_w = 1.0;
+}
+void opendrt_tonescale_aces_2(inout OpenDRTParams p) {
+    p.tn_con = 1.15; p.tn_sh = 0.5; p.tn_toe = 0.04; p.tn_off = 0.0;
+    p.tn_hcon_enable = false; p.tn_hcon = 1.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 1.0;
+    p.tn_lcon_enable = false; p.tn_lcon = 1.0; p.tn_lcon_w = 0.6;
+}
+void opendrt_tonescale_marvelous(inout OpenDRTParams p) {
+    p.tn_con = 1.5; p.tn_sh = 0.5; p.tn_toe = 0.003; p.tn_off = 0.01;
+    p.tn_hcon_enable = true; p.tn_hcon = 0.25; p.tn_hcon_pv = 0.0; p.tn_hcon_st = 4.0;
+    p.tn_lcon_enable = true; p.tn_lcon = 1.0; p.tn_lcon_w = 1.0;
+}
+void opendrt_tonescale_dagrinchi(inout OpenDRTParams p) {
+    p.tn_con = 1.2; p.tn_sh = 0.5; p.tn_toe = 0.02; p.tn_off = 0.0;
+    p.tn_hcon_enable = false; p.tn_hcon = 0.0; p.tn_hcon_pv = 1.0; p.tn_hcon_st = 1.0;
+    p.tn_lcon_enable = false; p.tn_lcon = 0.0; p.tn_lcon_w = 0.6;
 }
 
 // Main OpenDRT transform
@@ -406,7 +461,7 @@ vec3 opendrt_transform(vec3 rgb, OpenDRTParams p) {
     // Brilliance (pre-tonescale)
     if (p.brl_enable) {
         float brl_tsf = opendrt_spowf(tsn / (tsn + 1.0), 1.0 - p.brl_rng);
-        float brl_exf = (p.brl + p.brl_r * ha_rgb.x + p.brl_g * ha_rgb.y + p.brl_b * ha_rgb.z) *
+        float brl_exf = (p.brl + dot(p.brl_rgb, ha_rgb)) *
                         opendrt_spowf(ach_d, 1.0 / p.brl_st);
         float brl_ex = pow(2.0, brl_exf * (brl_exf < 0.0 ? brl_tsf : 1.0 - brl_tsf));
         tsn *= brl_ex;
@@ -466,12 +521,8 @@ vec3 opendrt_transform(vec3 rgb, OpenDRTParams p) {
 
     // Hue shift RGB
     if (p.hs_rgb_enable) {
-        vec3 hs_rgb = vec3(
-            ha_rgb_hs.x * ach_d * opendrt_spowf(tsn_pt, 1.0 / p.hs_r_rng),
-            ha_rgb_hs.y * ach_d * opendrt_spowf(tsn_pt, 1.0 / p.hs_g_rng),
-            ha_rgb_hs.z * ach_d * opendrt_spowf(tsn_pt, 1.0 / p.hs_b_rng)
-        );
-        vec3 hsf = vec3(hs_rgb.x * p.hs_r, hs_rgb.y * -p.hs_g, hs_rgb.z * -p.hs_b);
+        vec3 _hs_rgb_w = opendrt_spowf(vec3(tsn_pt), 1.0 / p.hs_rgb_rng) * (ha_rgb_hs * ach_d);
+        vec3 hsf = _hs_rgb_w * vec3(p.hs_rgb.x, -p.hs_rgb.y, -p.hs_rgb.z);
         hsf = vec3(hsf.z - hsf.y, hsf.x - hsf.z, hsf.y - hsf.x);
         rgb += hsf;
     }
@@ -479,19 +530,15 @@ vec3 opendrt_transform(vec3 rgb, OpenDRTParams p) {
     // Hue shift CMY
     if (p.hs_cmy_enable) {
         float tsn_pt_compl = 1.0 - tsn_pt;
-        vec3 hs_cmy = vec3(
-            ha_cmy.x * ach_d * opendrt_spowf(tsn_pt_compl, 1.0 / p.hs_c_rng),
-            ha_cmy.y * ach_d * opendrt_spowf(tsn_pt_compl, 1.0 / p.hs_m_rng),
-            ha_cmy.z * ach_d * opendrt_spowf(tsn_pt_compl, 1.0 / p.hs_y_rng)
-        );
-        vec3 hsf = vec3(hs_cmy.x * -p.hs_c, hs_cmy.y * p.hs_m, hs_cmy.z * p.hs_y);
+        vec3 _hs_cmy_w = opendrt_spowf(vec3(tsn_pt_compl), 1.0 / p.hs_cmy_rng) * (ha_cmy * ach_d);
+        vec3 hsf = _hs_cmy_w * vec3(-p.hs_cmy.x, p.hs_cmy.y, p.hs_cmy.z);
         hsf = vec3(hsf.z - hsf.y, hsf.x - hsf.z, hsf.y - hsf.x);
         rgb += hsf;
     }
 
     // Purity compression
     float pt_lml_p = 1.0 + 4.0 * (1.0 - tsn_pt) *
-                     (p.pt_lml + p.pt_lml_r * ha_rgb_hs.x + p.pt_lml_g * ha_rgb_hs.y + p.pt_lml_b * ha_rgb_hs.z);
+                     (p.pt_lml + dot(p.pt_lml_rgb, ha_rgb_hs));
     float ptf = 1.0 - opendrt_spowf(tsn_pt, pt_lml_p);
     float pt_lmh_p = (1.0 - ach_d * (p.pt_lmh_r * ha_rgb_hs.x + p.pt_lmh_b * ha_rgb_hs.z)) *
                      (1.0 - p.pt_lmh * ach_d);
@@ -538,7 +585,7 @@ vec3 opendrt_transform(vec3 rgb, OpenDRTParams p) {
         float brlp_ach_d = length(brlp_opp) / 4.0;
         brlp_ach_d = 1.1 * (brlp_ach_d * brlp_ach_d / (brlp_ach_d + 0.1));
         vec3 brlp_ha_rgb = ach_d * ha_rgb;
-        float brlp_m = p.brlp + p.brlp_r * brlp_ha_rgb.x + p.brlp_g * brlp_ha_rgb.y + p.brlp_b * brlp_ha_rgb.z;
+        float brlp_m = p.brlp + dot(p.brlp_rgb, brlp_ha_rgb);
         float brlp_ex = pow(2.0, brlp_m * brlp_ach_d * tsn);
         rgb *= brlp_ex;
     }
